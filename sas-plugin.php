@@ -4,8 +4,8 @@
  * Author: Sparrow&Snow
  * Author URI: https://www.sparrowandsnow.com/
  * Version: 1.0.0
- * Text Domain: sparrow
- * Description: Core plugin required for Sparow Theme.
+ * Text Domain: sas
+ * Description: Core plugin required for Sparrow Theme.
  */
 
 /*
@@ -68,11 +68,9 @@ class SAS_Plugin {
 		}
 		add_action('pre_get_posts', 'custom_product_search_query');
 
-		function cc_mime_types($mimes) {
-			$mimes['svg'] = 'image/svg+xml';
-			return $mimes;
-		}
-		add_filter('upload_mimes', 'cc_mime_types');
+		// Allow SVG uploads with basic sanitization
+		add_filter('upload_mimes', array($this, 'allow_svg_upload'));
+		add_filter('wp_handle_upload_prefilter', array($this, 'sanitize_svg_upload'));
 
 		if ( ! did_action( 'elementor/loaded' ) ) {
 			add_action( 'admin_notices', array( $this, 'admin_notice_missing_main_plugin' ) );
@@ -107,6 +105,75 @@ class SAS_Plugin {
 
 	public function scripts_enqueue() {
 		wp_enqueue_script('sas-slickslider', trailingslashit(SAS_PLUGIN_URL) . 'widgets/assets/js/slick.js', array('jquery'), SAS_PLUGIN_VERSION, false);
+	}
+
+	/**
+	 * Allow SVG uploads for admins only
+	 */
+	public function allow_svg_upload($mimes) {
+		// Only allow for users who can upload files
+		if (current_user_can('upload_files')) {
+			$mimes['svg'] = 'image/svg+xml';
+			$mimes['svgz'] = 'image/svg+xml';
+		}
+		return $mimes;
+	}
+
+	/**
+	 * Sanitize SVG uploads to prevent XSS attacks
+	 */
+	public function sanitize_svg_upload($file) {
+		if ($file['type'] === 'image/svg+xml') {
+			// Check user capability
+			if (!current_user_can('upload_files')) {
+				$file['error'] = esc_html__('You do not have permission to upload SVG files.', 'sas');
+				return $file;
+			}
+
+			$svg_content = file_get_contents($file['tmp_name']);
+
+			// Basic SVG sanitization - remove dangerous elements and attributes
+			$dangerous_elements = array(
+				'script', 'use', 'foreignObject', 'set', 'animate', 'animateMotion',
+				'animateTransform', 'animateColor'
+			);
+
+			$dangerous_attributes = array(
+				'onload', 'onclick', 'onerror', 'onmouseover', 'onmouseout',
+				'onfocus', 'onblur', 'onchange', 'onsubmit', 'onreset',
+				'onkeydown', 'onkeypress', 'onkeyup', 'href', 'xlink:href'
+			);
+
+			// Check for dangerous elements
+			foreach ($dangerous_elements as $element) {
+				if (preg_match('/<' . $element . '[^>]*>/i', $svg_content)) {
+					$file['error'] = esc_html__('SVG contains potentially dangerous elements.', 'sas');
+					return $file;
+				}
+			}
+
+			// Check for dangerous attributes
+			foreach ($dangerous_attributes as $attr) {
+				if (preg_match('/' . $attr . '\s*=/i', $svg_content)) {
+					$file['error'] = esc_html__('SVG contains potentially dangerous attributes.', 'sas');
+					return $file;
+				}
+			}
+
+			// Check for javascript: URLs
+			if (preg_match('/javascript\s*:/i', $svg_content)) {
+				$file['error'] = esc_html__('SVG contains JavaScript URLs.', 'sas');
+				return $file;
+			}
+
+			// Check for data: URLs (can contain embedded scripts)
+			if (preg_match('/data\s*:/i', $svg_content)) {
+				$file['error'] = esc_html__('SVG contains data URLs.', 'sas');
+				return $file;
+			}
+		}
+
+		return $file;
 	}
 
 	public function plugin_row_meta( $plugin_meta, $plugin_file ) {
@@ -179,9 +246,9 @@ class SAS_Plugin {
 
 		$message = sprintf(
 			/* translators: 1: Plugin name 2: Elementor */
-			esc_html__( '"%1$s" requires "%2$s" to be installed and activated.', 'elementor-hello-world' ),
-			'<strong>' . esc_html__( 'SAS Elementor Widgets', 'elementor-hello-world' ) . '</strong>',
-			'<strong>' . esc_html__( 'Elementor', 'elementor-hello-world' ) . '</strong>'
+			esc_html__( '"%1$s" requires "%2$s" to be installed and activated.', 'sas' ),
+			'<strong>' . esc_html__( 'Sparrow Core', 'sas' ) . '</strong>',
+			'<strong>' . esc_html__( 'Elementor', 'sas' ) . '</strong>'
 		);
 
 		printf( '<div class="notice notice-warning is-dismissible"><p>%1$s</p></div>', $message );
@@ -194,9 +261,9 @@ class SAS_Plugin {
 
 		$message = sprintf(
 			/* translators: 1: Plugin name 2: Elementor 3: Required Elementor version */
-			esc_html__( '"%1$s" requires "%2$s" version %3$s or greater.', 'elementor-hello-world' ),
-			'<strong>' . esc_html__( 'SAS Elementor Widgets', 'elementor-hello-world' ) . '</strong>',
-			'<strong>' . esc_html__( 'Elementor', 'elementor-hello-world' ) . '</strong>',
+			esc_html__( '"%1$s" requires "%2$s" version %3$s or greater.', 'sas' ),
+			'<strong>' . esc_html__( 'Sparrow Core', 'sas' ) . '</strong>',
+			'<strong>' . esc_html__( 'Elementor', 'sas' ) . '</strong>',
 			self::MINIMUM_ELEMENTOR_VERSION
 		);
 
@@ -210,9 +277,9 @@ class SAS_Plugin {
 
 		$message = sprintf(
 			/* translators: 1: Plugin name 2: PHP 3: Required PHP version */
-			esc_html__( '"%1$s" requires "%2$s" version %3$s or greater.', 'elementor-hello-world' ),
-			'<strong>' . esc_html__( 'SAS Elementor Widgets', 'elementor-hello-world' ) . '</strong>',
-			'<strong>' . esc_html__( 'PHP', 'elementor-hello-world' ) . '</strong>',
+			esc_html__( '"%1$s" requires "%2$s" version %3$s or greater.', 'sas' ),
+			'<strong>' . esc_html__( 'Sparrow Core', 'sas' ) . '</strong>',
+			'<strong>' . esc_html__( 'PHP', 'sas' ) . '</strong>',
 			self::MINIMUM_PHP_VERSION
 		);
 

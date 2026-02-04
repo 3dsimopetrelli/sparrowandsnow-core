@@ -76,18 +76,22 @@
 				var $itemHolder = $scope.find('.sas-grid');
 				var isotopeEna = $scope.find( '.sas-grid_blog_container' ).data('enableisotope');
 
+				// Add nonce to request data for security
+				var requestData = $.extend({}, $settings, {
+					nonce: ajax_object.nonce
+				});
 
 				jQuery.ajax({
 					url: ajax_object.ajaxurl,
 					type:'post',
-					data: $settings,
-					success:function(response){					
+					data: requestData,
+					success:function(response){
 						var $newItems = $(response);
-						
+
 						$itemHolder.append($newItems);
-						
+
 					    if (isotopeEna)	$itemHolder.isotope( 'insert', $newItems );
-						
+
 						if ($loadMoreElgrid.length) {
 							$loadMoreElgrid.removeClass('sas-load-more-loading');
 						}
@@ -99,6 +103,12 @@
 							jQuery(this).addClass("is-loaded");
 						});
 
+					},
+					error: function(xhr, status, error) {
+						console.error('SAS Blog Grid AJAX Error:', error);
+						if ($loadMoreElgrid.length) {
+							$loadMoreElgrid.removeClass('sas-load-more-loading');
+						}
 					}
 				});
 			}

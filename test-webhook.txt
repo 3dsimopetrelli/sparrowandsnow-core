@@ -1,4 +1,0 @@
-Test webhook auto-deployment
-Data: 2026-02-04
-
-Se vedi questo file, il deploy automatico funziona!

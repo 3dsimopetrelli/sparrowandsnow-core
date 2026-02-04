@@ -1,4 +1,9 @@
-<?php 
+<?php
+
+// Prevent direct access
+if (!defined('ABSPATH')) {
+	exit;
+}
 
 function sas_get_posts($settings, $paged) {
 	$enable_navigation = $settings['enable_navigation'];
@@ -44,61 +49,84 @@ function sas_get_posts($settings, $paged) {
 	
 	
 function wordpress_post_ajax_load() {
-	$current_page = $_REQUEST['current_page'];
+	// Verify nonce for security
+	if (!isset($_REQUEST['nonce']) || !wp_verify_nonce($_REQUEST['nonce'], 'sas_blog_ajax_nonce')) {
+		wp_send_json_error(array('message' => 'Security check failed'), 403);
+		wp_die();
+	}
+
+	// Allowed blog types (whitelist validation)
+	$allowed_blog_types = array('grid', 'classic', 'list');
+	$allowed_orderby = array('date', 'title', 'modified', 'rand', 'comment_count', 'menu_order');
+	$allowed_order = array('ASC', 'DESC');
+
+	// Sanitize blog_type with whitelist
+	$blog_type = isset($_REQUEST['blog_type']) ? sanitize_key($_REQUEST['blog_type']) : 'grid';
+	if (!in_array($blog_type, $allowed_blog_types, true)) {
+		$blog_type = 'grid'; // Default fallback
+	}
+
+	// Sanitize orderby with whitelist
+	$orderby = isset($_REQUEST['orderby']) ? sanitize_key($_REQUEST['orderby']) : 'date';
+	if (!in_array($orderby, $allowed_orderby, true)) {
+		$orderby = 'date';
+	}
+
+	// Sanitize order with whitelist
+	$order = isset($_REQUEST['order']) ? strtoupper(sanitize_key($_REQUEST['order'])) : 'DESC';
+	if (!in_array($order, $allowed_order, true)) {
+		$order = 'DESC';
+	}
+
+	// Sanitize all input data
+	$current_page = isset($_REQUEST['current_page']) ? absint($_REQUEST['current_page']) : 1;
+
 	$settings = array(
-					'blog_thumbnail' => $_REQUEST['blog_thumbnail'],
-					'blog_title' => $_REQUEST['blog_title'],
-					'blog_categories' => $_REQUEST['blog_categories'],
-					'blog_content' => $_REQUEST['blog_content'],
-					'blog_author' => $_REQUEST['blog_author'],
-					'blog_date' => $_REQUEST['blog_date'],
-					'blog_comments' => $_REQUEST['blog_comments'],
-					'blog_button' => $_REQUEST['blog_button'],
-					'enable_navigation' => $_REQUEST['enable_navigation'],
-					'enable_load_more' =>  $_REQUEST['enable_load_more'],
-					'exclude_posts' => $_REQUEST['exclude_posts'],
-					'posts_per_page' => $_REQUEST['posts_per_page'],
-					'orderby' => $_REQUEST['orderby'],
-					'order' => $_REQUEST['order'],
-					'blog_posts_offset' => $_REQUEST['blog_posts_offset'],
-					'post_categories' => $_REQUEST['post_categories'],
-					'source' => $_REQUEST['source'],
-					'image_size' => $_REQUEST['image_size'],
-					'blog_type' => $_REQUEST['blog_type'],
-					'preview_words' => $_REQUEST['preview_words']
-				);
+		'blog_thumbnail' => isset($_REQUEST['blog_thumbnail']) ? sanitize_text_field($_REQUEST['blog_thumbnail']) : '',
+		'blog_title' => isset($_REQUEST['blog_title']) ? sanitize_text_field($_REQUEST['blog_title']) : '',
+		'blog_categories' => isset($_REQUEST['blog_categories']) ? sanitize_text_field($_REQUEST['blog_categories']) : '',
+		'blog_content' => isset($_REQUEST['blog_content']) ? sanitize_text_field($_REQUEST['blog_content']) : '',
+		'blog_author' => isset($_REQUEST['blog_author']) ? sanitize_text_field($_REQUEST['blog_author']) : '',
+		'blog_date' => isset($_REQUEST['blog_date']) ? sanitize_text_field($_REQUEST['blog_date']) : '',
+		'blog_comments' => isset($_REQUEST['blog_comments']) ? sanitize_text_field($_REQUEST['blog_comments']) : '',
+		'blog_button' => isset($_REQUEST['blog_button']) ? sanitize_text_field($_REQUEST['blog_button']) : '',
+		'enable_navigation' => isset($_REQUEST['enable_navigation']) ? sanitize_text_field($_REQUEST['enable_navigation']) : 'none',
+		'enable_load_more' => isset($_REQUEST['enable_load_more']) ? sanitize_text_field($_REQUEST['enable_load_more']) : '',
+		'exclude_posts' => isset($_REQUEST['exclude_posts']) ? sanitize_text_field($_REQUEST['exclude_posts']) : '',
+		'posts_per_page' => isset($_REQUEST['posts_per_page']) ? absint($_REQUEST['posts_per_page']) : 10,
+		'orderby' => $orderby,
+		'order' => $order,
+		'blog_posts_offset' => isset($_REQUEST['blog_posts_offset']) ? absint($_REQUEST['blog_posts_offset']) : 0,
+		'post_categories' => isset($_REQUEST['post_categories']) ? array_map('sanitize_text_field', (array)$_REQUEST['post_categories']) : array(),
+		'source' => isset($_REQUEST['source']) ? sanitize_text_field($_REQUEST['source']) : '',
+		'image_size' => isset($_REQUEST['image_size']) ? sanitize_text_field($_REQUEST['image_size']) : 'medium',
+		'blog_type' => $blog_type,
+		'preview_words' => isset($_REQUEST['preview_words']) ? absint($_REQUEST['preview_words']) : 20
+	);
 
-
-	//TODO: questa e` la funzione che fisicamente torna i post di istagram
-	//bisogna copiarla per far tornare i posts di WP
-	//vedi helper di Istagram
-	//$wp_posts = get_posts($current_page);
 	$wp_posts = sas_get_posts($settings, $current_page);
-	$output = '';
-	
+
 	ob_start();
 
-	if ( $wp_posts->have_posts() ) : 
-		while ( $wp_posts->have_posts() ) : 
+	if ($wp_posts->have_posts()) :
+		while ($wp_posts->have_posts()) :
 			$wp_posts->the_post();
-			if ($_REQUEST['blog_type'] == 'grid'){
-				include plugin_dir_path( __DIR__ ) .'widgets/content/blog-templates/grid.php';
+
+			// Safe template inclusion using validated blog_type
+			$template_file = plugin_dir_path(__DIR__) . 'widgets/content/blog-templates/' . $blog_type . '.php';
+
+			if (file_exists($template_file)) {
+				include $template_file;
 			}
-			else if ($_REQUEST['blog_type'] == 'classic') {
-				include plugin_dir_path( __DIR__ ) .'widgets/content/blog-templates/classic.php';
-			}
-			else if ($_REQUEST['blog_type'] == 'list') {
-				include plugin_dir_path( __DIR__ ) .'widgets/content/blog-templates/list.php';
-			}
-			
 		endwhile;
-	endif; 
-	
+		wp_reset_postdata();
+	endif;
+
 	$output = ob_get_clean();
 
 	echo $output;
 
-	die();
+	wp_die();
 }
 	
 		
