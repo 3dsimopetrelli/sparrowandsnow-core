@@ -1,7 +1,5 @@
 # Analisi di Sicurezza e Manutenzione - Sparrow Core Plugin
 
-> **TEST CONNESSIONE HOSTINGER** - 2026-02-03 - Se vedi questo messaggio, la repo e' sincronizzata correttamente con Hostinger!
-
 **Data**: 2026-02-03
 **Versione Plugin**: 1.0.0
 **Sito**: sparrowandsnow.com
