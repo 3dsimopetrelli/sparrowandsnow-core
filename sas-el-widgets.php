@@ -97,7 +97,10 @@ class SAS_Elementor_Widgets {
 	    wp_register_script('sas-blog-grid', trailingslashit(SAS_PLUGIN_URL) . 'widgets/assets/js/blog-grid.js', array('jquery'), SAS_PLUGIN_VERSION, true);
 	    wp_register_script('sas-fixed-price-bar', trailingslashit(SAS_PLUGIN_URL) . 'widgets/assets/js/fixed-price-bar.js', array('jquery'), SAS_PLUGIN_VERSION, true);
         
-		wp_localize_script( 'sas-blog-grid', 'ajax_object', array('ajaxurl' => admin_url( 'admin-ajax.php' )));
+		wp_localize_script('sas-blog-grid', 'ajax_object', array(
+			'ajaxurl' => admin_url('admin-ajax.php'),
+			'nonce' => wp_create_nonce('sas_blog_ajax_nonce')
+		));
         
     }
 

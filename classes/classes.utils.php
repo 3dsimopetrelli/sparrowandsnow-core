@@ -18,10 +18,22 @@ class SAS_utils {
 		return $rvalue;
 	}
 
-	public static function updatePostMeta($post_id,$variable) {
-		if (isset($_POST[$variable])) {
-			update_post_meta($post_id, $variable, $_POST[$variable]);
+	/**
+	 * Update post meta with security checks
+	 * @deprecated Use direct update_post_meta with proper nonce/capability checks instead
+	 */
+	public static function updatePostMeta($post_id, $variable, $sanitize_callback = 'sanitize_text_field') {
+		// Check user capability
+		if (!current_user_can('edit_post', $post_id)) {
+			return false;
 		}
+
+		if (isset($_POST[$variable])) {
+			$value = call_user_func($sanitize_callback, $_POST[$variable]);
+			update_post_meta($post_id, $variable, $value);
+			return true;
+		}
+		return false;
 	}
 
 	public static function setPostMeta($post_id,$variable,$value) {
@@ -75,9 +87,12 @@ class SAS_utils {
 		return $slug;
 	}
 
+	/**
+	 * Sanitize general input - URL decode and sanitize text
+	 */
 	public static function sanitizegeneral($valore) {
-		//$valore = str_replace("|","&",$valore);
 		$valore = urldecode($valore);
+		$valore = sanitize_text_field($valore);
 		return $valore;
 	}
 
