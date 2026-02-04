@@ -202,9 +202,6 @@ class SAS_Plugin {
     public function sas_create_builders() {
         load_plugin_textdomain( 'sas' );
         if ( $this->plugin_is_active( 'elementor' ) ){
-			require_once 'classes/megamenu/megamenu.php';
-			require_once 'classes/megamenu/walker.megamenu.php';
-            $this->sas_add_elementor_cpt('megamenu_builder');
 			$this->sas_add_elementor_cpt('sas-portfolio');
 			$this->sas_remove_elementor_colors();
         }
