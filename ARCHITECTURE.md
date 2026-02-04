@@ -15,11 +15,9 @@
 │         ▼                   ▼                   ▼                            │
 │  ┌────────────┐      ┌────────────┐      ┌────────────┐                     │
 │  │ post-type  │      │  helper    │      │  header/   │                     │
-│  │ megamenu   │      │  query_    │      │  content/  │                     │
-│  │ utils      │      │  helper    │      │  assets/   │                     │
-│  │ wpapi      │      └────────────┘      └────────────┘                     │
-│  │ wc-radio   │                                                              │
-│  └────────────┘                                                              │
+│  │ utils      │      │  query_    │      │  content/  │                     │
+│  │ wc-radio   │      │  helper    │      │  assets/   │                     │
+│  └────────────┘      └────────────┘      └────────────┘                     │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -36,10 +34,7 @@ sparrowandsnow-core/
 ├── classes/                    # Classi PHP core
 │   ├── post-type.php          # Custom Post Types
 │   ├── classes.utils.php      # Utility functions
-│   ├── wc-variations-radio-buttons.php  # WooCommerce integration
-│   └── megamenu/
-│       ├── megamenu.php       # Megamenu CPT
-│       └── walker.megamenu.php # Custom Walker
+│   └── wc-variations-radio-buttons.php  # WooCommerce integration
 │
 ├── framework/                  # Helper functions
 │   ├── helper.php             # Generic helpers
@@ -105,8 +100,7 @@ sparrowandsnow-core/
 │              init hook                                           │
 │              └── sas_create_builders()                          │
 │                  ├── load_plugin_textdomain('sas')              │
-│                  ├── Register CPTs (showcase, services, etc.)   │
-│                  └── If Elementor: Load megamenu               │
+│                  └── Register CPTs (showcase, services, etc.)   │
 └─────────────────────────┬───────────────────────────────────────┘
                           │
                           ▼
@@ -136,10 +130,10 @@ sparrowandsnow-core/
 │         ▼                ▼                ▼                      │
 │  showcase_cat      services_cat      help_cat                    │
 │                                                                  │
-│  ┌─────────────┐  ┌─────────────────────┐                       │
-│  │ sas-portfolio│  │  megamenu_builder   │                       │
-│  │ (progetti)  │  │  (menu Elementor)   │                       │
-│  └──────┬──────┘  └─────────────────────┘                       │
+│  ┌─────────────┐                                                 │
+│  │ sas-portfolio│                                                 │
+│  │ (progetti)  │                                                 │
+│  └──────┬──────┘                                                 │
 │         │                                                        │
 │         ▼                                                        │
 │  sas-portfolio-cat                                               │
