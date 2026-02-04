@@ -1,7 +1,0 @@
-TEST HOOK HOSTINGER
-===================
-
-Data: 2026-02-03
-Scopo: Verificare che l'hook di deployment funzioni correttamente
-
-Se vedi questo file su Hostinger, la sincronizzazione automatica funziona!
