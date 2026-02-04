@@ -88,7 +88,6 @@ class SAS_Plugin {
 		}
 
 		require_once 'classes/post-type.php';
-		require_once 'classes/sas-purchasecodes.php';
 		require_once 'classes/wc-variations-radio-buttons.php';
 
 		add_action( 'init', array( $this, 'register_portfolio' ) );

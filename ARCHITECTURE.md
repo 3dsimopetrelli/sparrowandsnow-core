@@ -36,8 +36,6 @@ sparrowandsnow-core/
 ├── classes/                    # Classi PHP core
 │   ├── post-type.php          # Custom Post Types
 │   ├── classes.utils.php      # Utility functions
-│   ├── classes.wpapi.purchasecodes.php  # REST API
-│   ├── sas-purchasecodes.php  # Purchase codes widget
 │   ├── wc-variations-radio-buttons.php  # WooCommerce integration
 │   └── megamenu/
 │       ├── megamenu.php       # Megamenu CPT
@@ -194,11 +192,6 @@ sparrowandsnow-core/
 │  ┌─────────────────┐                                            │
 │  │  WOOCOMMERCE    │◄─── Dipendenza opzionale                   │
 │  │                 │     Cart, Products, Variations, Checkout   │
-│  └─────────────────┘                                            │
-│                                                                  │
-│  ┌─────────────────┐                                            │
-│  │   REST API      │◄─── /sparrowandsnow/v1/purchasecodes      │
-│  │   WordPress     │     Gestione purchase codes                │
 │  └─────────────────┘                                            │
 │                                                                  │
 │  ┌─────────────────┐                                            │
