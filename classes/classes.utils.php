@@ -22,7 +22,12 @@ class SAS_utils {
 	 * Update post meta with security checks
 	 * @deprecated Use direct update_post_meta with proper nonce/capability checks instead
 	 */
-	public static function updatePostMeta($post_id, $variable, $sanitize_callback = 'sanitize_text_field') {
+	public static function updatePostMeta($post_id, $variable, $sanitize_callback = 'sanitize_text_field', $nonce_action = 'sas_update_post_meta', $nonce_field = '_sas_nonce') {
+		// Verify nonce
+		if (!isset($_POST[$nonce_field]) || !wp_verify_nonce($_POST[$nonce_field], $nonce_action)) {
+			return false;
+		}
+
 		// Check user capability
 		if (!current_user_can('edit_post', $post_id)) {
 			return false;
