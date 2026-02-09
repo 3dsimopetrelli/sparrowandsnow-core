@@ -11,8 +11,8 @@
 			</a>
 		</div>
 		<div class="post-category post-category-with-image">
-			<a href="<?php echo get_category_link($post_categories[0]->term_id); ?>">
-				<?php echo $post_categories[0]->name; ?>
+			<a href="<?php echo esc_url(get_category_link($post_categories[0]->term_id)); ?>">
+				<?php echo esc_html($post_categories[0]->name); ?>
 			</a>
 		</div>
 	<?php endif; ?>
@@ -21,8 +21,8 @@
 	</h2>
 	<?php if (!has_post_thumbnail()) : ?>
 		<div class="post-category post-category-no-image">
-			<a href="<?php echo get_category_link($post_categories[0]->term_id); ?>">
-				<?php echo $post_categories[0]->name; ?>
+			<a href="<?php echo esc_url(get_category_link($post_categories[0]->term_id)); ?>">
+				<?php echo esc_html($post_categories[0]->name); ?>
 			</a>
 			</div>
 			<div class="post-excerpt">

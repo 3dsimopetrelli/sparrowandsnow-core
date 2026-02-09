@@ -573,9 +573,9 @@ class SAS_Header_Cart extends Widget_Base {
 				<div class="wrap_login">
 						<div class="cart-login">
 							<?php if(is_user_logged_in()) : ?>
-								<a href="<?php echo esc_url(wc_get_page_permalink('myaccount')); ?>" title="<?php echo __('My Account', 'sparrow') ?>"><?php echo __($user_title, 'sas')?></a>
+								<a href="<?php echo esc_url(wc_get_page_permalink('myaccount')); ?>" title="<?php echo esc_attr__('My Account', 'sas') ?>"><?php echo esc_html($user_title)?></a>
 							<?php else: ?>
-								<a href="<?php echo get_permalink( get_option('woocommerce_myaccount_page_id') ); ?>" title="<?php echo __('Log In', 'sparrow') ?>"><?php echo __($login_title, 'sas')?></a>
+								<a href="<?php echo esc_url(get_permalink( get_option('woocommerce_myaccount_page_id') )); ?>" title="<?php echo esc_attr__('Log In', 'sas') ?>"><?php echo esc_html($login_title)?></a>
 							<?php endif; ?>
 						</div>
 				</div><!-- .wrap_login -->
